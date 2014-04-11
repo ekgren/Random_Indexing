@@ -1,10 +1,9 @@
-# !/usr/bin/python
-# vim: set fileencoding=iso-8859-15 :
-# Created on 15 jan 2014
-# @author: Ariel Ekgren, ekgren@github.com
+__author__ = 'Ariel Ekgren, https://github.com/ekgren/'
 
 import random
 from collections import deque
+
+import Math
 
 import numpy as np
 
@@ -102,6 +101,21 @@ class RandomIndexing(object):
                     pass
             que.clear()
 
+    def nearest_neighbours(self, target, n=5):
+        d = np.zeros(self.size, dtype=np.float)
+        for i, vector in enumerate(self.context_vectors):
+            d[i] = Math.cosine(self.context_vectors[target], vector)
+        d[d.argmin()] = np.inf
+
+        neighbs = []
+
+        for x in range(n):
+            neighbs.append((d.argmin(),d[d.argmin()]))
+            d[d.argmin()] = np.inf
+
+        return neighbs
+
+
 
 def random_vector(random_seed, dimensionality, random_degree):
     """
@@ -125,15 +139,4 @@ def random_vector(random_seed, dimensionality, random_degree):
 
 
 if __name__ == '__main__':
-    print "Start."
-    RI = RandomIndexing()
-    RI.random_degree = 3
-    RI.dimensionality = 10
-    RI.size = 10
-    RI.create_regular_word_space()
-    RI.update_context_vectors([1, 2, 3, 4, 5, 6, 7, 8, 9, 10])
-    print(RI.context_vectors)
-    print "pause"
-    RI.update_context_vectors([5, 2, 5, 2, 5, 2, 5])
-    print(RI.context_vectors)
-    print "Stop."
+    pass
