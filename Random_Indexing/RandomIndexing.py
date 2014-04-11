@@ -1,16 +1,12 @@
 # !/usr/bin/python
 # vim: set fileencoding=iso-8859-15 :
 # Created on 15 jan 2014
-# @author: Ariel
+# @author: Ariel Ekgren, ekgren@github.com
 
-import codecs
-import cPickle
 import random
 from collections import deque
 
 import numpy as np
-
-from TEXT import TEXT
 
 
 # noinspection PyBroadException
@@ -19,7 +15,7 @@ class RandomIndexing(object):
     Random Indexing
     """
 
-    def __init__(self):
+    def __init__(self, window_size=2):
         """
         Constructor
         """
@@ -27,201 +23,117 @@ class RandomIndexing(object):
         self.dimensionality = 2000
         self.random_degree = 20
 
-        self.seed_count = 1
+        self.random_seed = 1
 
-        self.stop = 0
+        self.window_start_position = 1
+        self.window_size = window_size
+        self.window = range(self.window_start_position,
+                            self.window_start_position + self.window_size)
 
-        self.window_start = 1
-        self.window_size = 2
+        self.sequence_queues = [deque(maxlen=i + 1) for i in self.window]
 
+        self.size = 1000
 
-        self.size = min(len(self.mapping), 200000)
+        self.base_vectors = None
+        self.context_vectors = None
 
-        # File path to corpus.
+        self.mapping = None
+        self.stop = None
 
-        #file_path = 'ukwac_plain_text/ukwac_preproc'
-        self.file_path = 'ukwac_plain_text/ukwac_subset_10M.txt'
-
-        # Instantiate text reader.
-        self.t = TEXT()
-
-    def load_dictionary(self, path):
-        """
-        Load vocabulary in form of a dict mapping a word to an int.
-        The mapping is in order of frequency. Highest frequency words first.
-        """
-        pkl_file = open(path, 'rb')
-        self.mapping = cPickle.load(pkl_file)
-        pkl_file.close()
-
-    def random_vector(self):
-        """
-        Creates and return a numpy int8 Random Indexing word vector.
-        """
-
-        random.seed(self.seed_count)
-
-        vector = np.zeros(self.dimensionality, dtype=np.int8)
-
-        for i in range(self.random_degree):
-            if i % 2 == 0:
-                vector[random.randint(0, self.dimensionality - 1)] = -1
-            else:
-                vector[random.randint(0, self.dimensionality - 1)] = 1
-
-        return vector
-
-    def create_word_vectors(self):
+    @staticmethod
+    def create_base_vectors(size, dimensionality, random_degree):
         """
         Creates and returns a matrix of base vectors as a numpy int8 ndarray.
+        :rtype : ndarray
+        :param size: int
+        :param dimensionality: int
+        :param random_degree: int
         """
-        word_vectors = np.zeros((self.size, self.dimensionality),
+        base_vectors = np.zeros((size, dimensionality),
                                 dtype=np.int8)
 
-        for word in self.mapping:
-            try:
-                word_vectors[self.mapping[word]] = self.random_vector()
-                self.seed_count += 1
-            except:
-                pass
+        for i in xrange(size):
+            base_vectors[i] = random_vector(i, dimensionality,
+                                            random_degree)
 
-        return word_vectors
+        return base_vectors
 
-    def create_regular_context_vectors(self):
+    @staticmethod
+    def create_context_vectors(size, dimensionality, dtype=np.int32):
         """
-        Create Random Indexing context vectors.
+        Create and returns a matrix of context vectors as a numpy array of
+        specified data type.
+        :param size:
+        :param dimensionality:
+        :param dtype:
+        :rtype : ndarray
         """
-        print 'Regular Random Indexing'
+        context_vectors = np.zeros((size, dimensionality), dtype=dtype)
+        return context_vectors
 
-        self.seed_count = 1
-
-        # Instantiate word space matrix.
-        context_vectors = np.zeros((self.size, self.dimensionality),
-                                   dtype=np.int32)
-        word_vectors = self.create_word_vectors()
-
-        # Creating one matrix per step removed.
-        for window in range(self.window_start,
-                            self.window_start + self.window_size):
-
-            print window
-
-            # Create word queue.
-            que = deque(maxlen=window + 1)
-
-            # Open corpus file and go over each line in corpus.
-            with codecs.open(self.file_path, 'r', "ISO-8859-1") as handle:
-
-                for line in handle:
-
-                    if line.startswith('CURRENT'):
-                        # If line starts with current it is just a reference in
-                        # UKWAC to the homepage which text was taken from.
-                        pass
-
-                    else:
-                        # Process text from corpora and return it with the
-                        # output() command.
-                        # It is then return as a python list with sentences
-                        # that are also in
-                        # in list format with one word per entry.
-                        self.t.read(line)
-
-                        for sentence in self.t.output():
-                            que.clear()
-                            for word in sentence:
-                                que.append(word)
-
-                                # Check if there exist a non stop-word word
-                                # at window distance
-                                # and add it to matrix if it does.
-                                try:
-                                    context_vectors[
-                                        self.mapping[que[window]]] += \
-                                        word_vectors[
-                                            self.mapping[que[0]]]  # pos
-                                except:
-                                    pass
-                                try:
-                                    context_vectors[self.mapping[que[0]]] += \
-                                        word_vectors[
-                                            self.mapping[que[window]]]  # neg
-                                except:
-                                    pass
-
-        np.save('npy_files/RIS_regRI_s' + str(self.window_start) + 'w' +
-                str(self.window_size) + '_10M.npy', context_vectors)
-
-    def create_extended_context_vectors(self):
+    def create_regular_word_space(self):
         """
-        Create extended Random Indexing context vectors.
+        Creates base and context vectors for the Random Indexing object.
         """
+        self.base_vectors = self.create_base_vectors(self.size,
+                                                     self.dimensionality,
+                                                     self.random_degree)
+        self.context_vectors = self.create_context_vectors(self.size,
+                                                           self.dimensionality,
+                                                           np.int32)
 
-        print 'Extended Random Indexing'
+    def update_context_vectors(self, sequence):
+        """
+        """
+        for i, window in enumerate(self.window):
+            # Create sequence queue.
+            que = self.sequence_queues[i]
+            for item in sequence:
+                que.append(item)
+                try:
+                    self.context_vectors[que[window]] += self.base_vectors[
+                        que[0]]
+                except:
+                    pass
+                try:
+                    self.context_vectors[que[0]] += self.base_vectors[que[
+                        window]]
+                except:
+                    pass
+            que.clear()
 
-        self.seed_count = 1
 
-        # Instantiate word space matrix.
-        context_vectors = np.zeros((self.size, self.dimensionality),
-                                   dtype=np.int32)
+def random_vector(random_seed, dimensionality, random_degree):
+    """
+    Creates and return a numpy int8 Random Index vector.
+    :param random_seed:
+    :param dimensionality:
+    :param random_degree:
+    :rtype ndarray:
+    """
+    random.seed(random_seed)
 
-        # Creating one matrix per step removed.
-        for window in range(self.window_start,
-                            self.window_start + self.window_size):
+    vector = np.zeros(dimensionality, dtype=np.int8)
 
-            print window
+    for i in range(random_degree):
+        if i % 2 == 0:
+            vector[random.randint(0, dimensionality - 1)] = -1
+        else:
+            vector[random.randint(0, dimensionality - 1)] = 1
 
-            word_vectors_pos = self.create_word_vectors()
-            word_vectors_neg = self.create_word_vectors()
+    return vector
 
-            # Create word queue.
-            que = deque(maxlen=window + 1)
-
-            # Open corpus file and go over each line in corpus.
-            with codecs.open(self.file_path, 'r', "ISO-8859-1") as handle:
-
-                for line in handle:
-
-                    if line.startswith('CURRENT'):
-                        # If line starts with current it is just a reference in
-                        # UKWAC to the homepage which text was taken from.
-                        pass
-
-                    else:
-                        # Process text from corpora and return it with the
-                        # output() command.
-                        # It is then return as a python list with sentences
-                        # that are also in
-                        # in list format with one word per entry.
-                        self.t.read(line)
-
-                        for sentence in self.t.output():
-                            que.clear()
-                            for word in sentence:
-                                que.append(word)
-
-                                # Check if there exist a non stop-word word
-                                # at window distance
-                                # and add it to matrix if it does.
-                                try:
-                                    context_vectors[
-                                        self.mapping[que[window]]] += \
-                                        word_vectors_pos[
-                                            self.mapping[que[0]]]  # pos
-                                except:
-                                    pass
-                                try:
-                                    context_vectors[self.mapping[que[0]]] += \
-                                        word_vectors_neg[
-                                            self.mapping[que[window]]]  # neg
-                                except:
-                                    pass
-
-        np.save('npy_files/RIS_extRI_s' + str(self.window_start) + 'w' +
-                str(self.window_size) + '_10M.npy', context_vectors)
 
 if __name__ == '__main__':
+    print "Start."
     RI = RandomIndexing()
-    #RI.create_regular_context_vectors()
-    RI.create_mod_regular_context_vectors()
-    #RI.create_extended_context_vectors()
+    RI.random_degree = 3
+    RI.dimensionality = 10
+    RI.size = 10
+    RI.create_regular_word_space()
+    RI.update_context_vectors([1, 2, 3, 4, 5, 6, 7, 8, 9, 10])
+    print(RI.context_vectors)
+    print "pause"
+    RI.update_context_vectors([5, 2, 5, 2, 5, 2, 5])
+    print(RI.context_vectors)
+    print "Stop."
