@@ -4,8 +4,8 @@ import numpy as np
 def cosine(u, v):
     """
     """
-    u = np.array(u, dtype=np.float)
-    v = np.array(v, dtype=np.float)
+    #u = np.array(u, dtype=np.float)
+    #v = np.array(v, dtype=np.float)
 
     u_norm = np.linalg.norm(u)
     v_norm = np.linalg.norm(v)

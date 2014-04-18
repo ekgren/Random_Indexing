@@ -1,13 +1,8 @@
 __author__ = 'Ariel Ekgren, https://github.com/ekgren/'
 
 import RandomIndexing
+import Mapping
 import nltk
-
-RI = RandomIndexing.RandomIndexing()
-RI.size = 500
-RI.dimensionality = 500
-RI.random_degree = 6
-RI.create_regular_word_space()
 
 f = open('../data/freud.txt')
 raw = f.read()
@@ -16,31 +11,25 @@ sent_detector = nltk.data.load('tokenizers/punkt/english.pickle')
 
 tokens = nltk.word_tokenize(raw)
 fdist = nltk.FreqDist(tokens)
-mapping = {}
 
-for i, word in enumerate(fdist.keys()):
-    mapping[word] = i
+word_space = RandomIndexing.RandomIndexing()
+word_space.size = 2000
+word_space.dimensionality = 500
+word_space.random_degree = 6
+word_space.create_regular_word_space()
+
+mapping = Mapping.Mapping()
+mapping.word_space = word_space
+mapping.create_map(fdist.keys())
 
 text = sent_detector.tokenize(raw)
 
-for S in text:
-    sent = []
-    for x in nltk.word_tokenize(S):
-        try:
-            sent.append(mapping[x])
-        except:
-            pass
-    RI.update_context_vectors(sent)
+for sentence in text:
+    mapped_sentence = mapping.map_sequence(nltk.word_tokenize(sentence))
+    word_space.update_context_vectors(mapped_sentence)
 
-target = 'the'
-
-neighb_args, neighb_vals = RI.nearest_neighbours(mapping[target], 5)
-
-print neighb_vals
-
-print "Target word:", target
-
-for i, x in enumerate(neighb_args):
-    print "    ", i+1, fdist.keys()[x]
-
-print "\nStop."
+print mapping.nearest_neighbours('ego')
+print mapping.nearest_neighbours('child')
+print mapping.nearest_neighbours('father')
+print mapping.nearest_neighbours('think')
+print mapping.nearest_neighbours('xxxxxxxxxx')
