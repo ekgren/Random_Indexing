@@ -16,7 +16,8 @@ class RandomIndexing(object):
 
     def __init__(self, window_size=2):
         """
-        Constructor
+        Initiates the Random Indexing object.
+        :param window_size: int
         """
 
         self.dimensionality = 2000
@@ -62,10 +63,10 @@ class RandomIndexing(object):
         """
         Create and returns a matrix of context vectors as a numpy array of
         specified data type.
-        :param size:
-        :param dimensionality:
-        :param dtype:
         :rtype : ndarray
+        :param size: int
+        :param dimensionality: int
+        :param dtype: numpy data type
         """
         context_vectors = np.zeros((size, dimensionality), dtype=dtype)
         return context_vectors
@@ -83,6 +84,8 @@ class RandomIndexing(object):
 
     def update_context_vectors(self, sequence):
         """
+        Incrementally update the context matrix.
+        :param sequence: list, tuple or ndarray of integers
         """
         for i, window in enumerate(self.window):
             # Create sequence queue.
@@ -102,19 +105,42 @@ class RandomIndexing(object):
             que.clear()
 
     def nearest_neighbours(self, target, n=5):
+        """
+        Find and return the n nearest neighbours to a target vector from
+        the context matrix.
+        :rtype : 2-tuple of ndarrays
+        :param target: int
+        :param n: int
+        """
         d = np.zeros(self.size, dtype=np.float)
+
         for i, vector in enumerate(self.context_vectors):
             d[i] = Math.cosine(self.context_vectors[target], vector)
-        d[d.argmin()] = np.inf
 
-        neighbs = []
+        args = np.argsort(d)[1:n+1]
 
-        for x in range(n):
-            neighbs.append((d.argmin(),d[d.argmin()]))
-            d[d.argmin()] = np.inf
+        vals = d[args]
 
-        return neighbs
+        return args, vals
 
+    def nearest_neighbours_base(self, target, n=5):
+        """
+        Find and return the n nearest neighbours to a target vector from
+        the base matrix.
+        :rtype : 2-tuple of ndarrays
+        :param target: int
+        :param n: int
+        """
+        d = np.zeros(self.size, dtype=np.float)
+
+        for i, vector in enumerate(self.context_vectors):
+            d[i] = Math.cosine(self.base_vectors[target], vector)
+
+        args = np.argsort(d)[1:n+1]
+
+        vals = d[args]
+
+        return args, vals
 
 
 def random_vector(random_seed, dimensionality, random_degree):

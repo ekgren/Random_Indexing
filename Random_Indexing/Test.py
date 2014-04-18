@@ -3,15 +3,13 @@ __author__ = 'Ariel Ekgren, https://github.com/ekgren/'
 import RandomIndexing
 import nltk
 
-print "Start.\n"
-
 RI = RandomIndexing.RandomIndexing()
 RI.size = 500
-RI.dimensionality = 1000
-RI.random_degree = 10
+RI.dimensionality = 500
+RI.random_degree = 6
 RI.create_regular_word_space()
 
-f = open('C:/Alpha/datasets/freud.txt')
+f = open('../data/freud.txt')
 raw = f.read()
 
 sent_detector = nltk.data.load('tokenizers/punkt/english.pickle')
@@ -34,14 +32,15 @@ for S in text:
             pass
     RI.update_context_vectors(sent)
 
-target = 'libido'
+target = 'the'
 
-neighbs = RI.nearest_neighbours(mapping[target], 5)
+neighb_args, neighb_vals = RI.nearest_neighbours(mapping[target], 5)
 
-print neighbs
+print neighb_vals
 
-print target
-for x in neighbs:
-    print fdist.keys()[x[0]]
+print "Target word:", target
+
+for i, x in enumerate(neighb_args):
+    print "    ", i+1, fdist.keys()[x]
 
 print "\nStop."
