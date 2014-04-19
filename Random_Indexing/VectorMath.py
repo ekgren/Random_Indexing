@@ -1,11 +1,10 @@
 __author__ = 'Ariel Ekgren, https://github.com/ekgren/'
+
 import numpy as np
 
 def cosine(u, v):
     """
     """
-    #u = np.array(u, dtype=np.float)
-    #v = np.array(v, dtype=np.float)
 
     u_norm = np.linalg.norm(u)
     v_norm = np.linalg.norm(v)
@@ -15,7 +14,4 @@ def cosine(u, v):
     else:
         dist = np.inf
 
-    if np.isnan(dist):
-        return np.inf
-    else:
-        return dist
+    return dist

@@ -1,7 +1,6 @@
 __author__ = 'Ariel Ekgren, https://github.com/ekgren/'
 
-import RandomIndexing
-import Mapping
+import Random_Indexing
 import nltk
 
 f = open('../data/freud.txt')
@@ -12,13 +11,13 @@ sent_detector = nltk.data.load('tokenizers/punkt/english.pickle')
 tokens = nltk.word_tokenize(raw)
 fdist = nltk.FreqDist(tokens)
 
-word_space = RandomIndexing.RandomIndexing()
+word_space = Random_Indexing.RandomIndexing()
 word_space.size = 2000
 word_space.dimensionality = 500
 word_space.random_degree = 6
 word_space.create_regular_word_space()
 
-mapping = Mapping.Mapping()
+mapping = Random_Indexing.Mapping()
 mapping.word_space = word_space
 mapping.create_map(fdist.keys())
 

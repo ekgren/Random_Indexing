@@ -3,7 +3,7 @@ __author__ = 'Ariel Ekgren, https://github.com/ekgren/'
 import random
 from collections import deque
 
-import Math
+import VectorMath
 
 import numpy as np
 
@@ -115,7 +115,7 @@ class RandomIndexing(object):
         d = np.zeros(self.size, dtype=np.float)
 
         for i, vector in enumerate(self.context_vectors):
-            d[i] = Math.cosine(self.context_vectors[target], vector)
+            d[i] = VectorMath.cosine(self.context_vectors[target], vector)
 
         args = np.argsort(d)[1:n+1]
 
@@ -134,7 +134,7 @@ class RandomIndexing(object):
         d = np.zeros(self.size, dtype=np.float)
 
         for i, vector in enumerate(self.context_vectors):
-            d[i] = Math.cosine(self.base_vectors[target], vector)
+            d[i] = VectorMath.cosine(self.base_vectors[target], vector)
 
         args = np.argsort(d)[1:n+1]
 
