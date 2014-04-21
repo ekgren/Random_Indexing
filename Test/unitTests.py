@@ -3,7 +3,7 @@ import Random_Indexing
 
 import numpy as np
 
-__author__ = 'Ariel Ekgren, https://github.com/ekgren/'
+__author__ = "Ariel Ekgren, https://github.com/ekgren/"
 
 class TestVectorMath(unittest.TestCase):
 

@@ -1,7 +1,7 @@
-__author__ = 'Ariel Ekgren, https://github.com/ekgren/'
-
 import Random_Indexing
 import nltk
+
+__author__ = "Ariel Ekgren, https://github.com/ekgren/"
 
 f = open('../data/freud.txt')
 raw = f.read()

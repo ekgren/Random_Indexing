@@ -1,5 +1,3 @@
-__author__ = 'Ariel Ekgren, https://github.com/ekgren/'
-
 import random
 from collections import deque
 
@@ -7,16 +5,22 @@ import VectorMath
 
 import numpy as np
 
+__author__ = "Ariel Ekgren, https://github.com/ekgren/"
+
 
 # noinspection PyBroadException
 class RandomIndexing(object):
     """
-    Random Indexing
+    Class that creates a Random Indexing word space.
+
+    The class contains a numpy int8 matrix of base vectors and a numpy
+    int32 matrix of context vectors.
     """
 
     def __init__(self, window_size=2):
         """
         Initiates the Random Indexing object.
+
         :param window_size: int
         """
 
@@ -44,6 +48,7 @@ class RandomIndexing(object):
     def create_base_vectors(size, dimensionality, random_degree):
         """
         Creates and returns a matrix of base vectors as a numpy int8 ndarray.
+
         :rtype : ndarray
         :param size: int
         :param dimensionality: int
@@ -63,6 +68,7 @@ class RandomIndexing(object):
         """
         Create and returns a matrix of context vectors as a numpy array of
         specified data type.
+
         :rtype : ndarray
         :param size: int
         :param dimensionality: int
@@ -85,6 +91,7 @@ class RandomIndexing(object):
     def update_context_vectors(self, sequence):
         """
         Incrementally update the context matrix.
+
         :param sequence: list, tuple or ndarray of integers
         """
         for i, window in enumerate(self.window):
@@ -108,6 +115,7 @@ class RandomIndexing(object):
         """
         Find and return the n nearest neighbours to a target vector from
         the context matrix.
+
         :rtype : 2-tuple of ndarrays
         :param target: int
         :param n: int
@@ -117,7 +125,7 @@ class RandomIndexing(object):
         for i, vector in enumerate(self.context_vectors):
             d[i] = VectorMath.cosine(self.context_vectors[target], vector)
 
-        args = np.argsort(d)[1:n+1]
+        args = np.argsort(d)[1:n + 1]
 
         vals = d[args]
 
@@ -127,6 +135,7 @@ class RandomIndexing(object):
         """
         Find and return the n nearest neighbours to a target vector from
         the base matrix.
+
         :rtype : 2-tuple of ndarrays
         :param target: int
         :param n: int
@@ -136,7 +145,7 @@ class RandomIndexing(object):
         for i, vector in enumerate(self.context_vectors):
             d[i] = VectorMath.cosine(self.base_vectors[target], vector)
 
-        args = np.argsort(d)[1:n+1]
+        args = np.argsort(d)[1:n + 1]
 
         vals = d[args]
 
@@ -146,6 +155,7 @@ class RandomIndexing(object):
 def random_vector(random_seed, dimensionality, random_degree):
     """
     Creates and return a numpy int8 Random Index vector.
+
     :param random_seed:
     :param dimensionality:
     :param random_degree:
@@ -162,7 +172,3 @@ def random_vector(random_seed, dimensionality, random_degree):
             vector[random.randint(0, dimensionality - 1)] = 1
 
     return vector
-
-
-if __name__ == '__main__':
-    pass

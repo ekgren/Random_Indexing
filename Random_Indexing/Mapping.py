@@ -1,6 +1,6 @@
-__author__ = 'Ariel Ekgren, https://github.com/ekgren/'
-
 import numpy as np
+
+__author__ = "Ariel Ekgren, https://github.com/ekgren/"
 
 
 class Mapping(object):
