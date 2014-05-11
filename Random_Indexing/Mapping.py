@@ -48,13 +48,39 @@ class Mapping(object):
 
         return mapped_sequence
 
-    def nearest_neighbours(self, target, n=5):
+    def nn_context_context(self, target, n=5):
         """
         """
         if self.word_space != None:
             if target in self.map and self.map[target] < self.word_space\
                     .size:
-                neighb_args, neighb_vals = self.word_space.nearest_neighbours(
+                neighb_args, neighb_vals = self.word_space.nn_context_context(
+                    self.map[target], n)
+                return target, self.inverse_map[neighb_args]
+            else:
+                return "No target!"
+
+    def nn_context_base(self, target, n=5):
+        """
+        """
+        if self.word_space != None:
+            if target in self.map and self.map[target] < self.word_space\
+                    .size:
+                neighb_args, neighb_vals = self.word_space\
+                    .nn_context_base(
+                    self.map[target], n)
+                return target, self.inverse_map[neighb_args]
+            else:
+                return "No target!"
+
+    def nn_base_base(self, target, n=5):
+        """
+        """
+        if self.word_space != None:
+            if target in self.map and self.map[target] < self.word_space\
+                    .size:
+                neighb_args, neighb_vals = self.word_space\
+                    .nn_base_base(
                     self.map[target], n)
                 return target, self.inverse_map[neighb_args]
             else:

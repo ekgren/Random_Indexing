@@ -111,7 +111,30 @@ class RandomIndexing(object):
                     pass
             que.clear()
 
-    def nearest_neighbours(self, target, n=5):
+    def update_base_vectors(self, sequence):
+        """
+        Incrementally update the context matrix.
+
+        :param sequence: list, tuple or ndarray of integers
+        """
+        for i, window in enumerate(self.window):
+            # Create sequence queue.
+            que = self.sequence_queues[i]
+            for item in sequence:
+                que.append(item)
+                try:
+                    self.base_vectors[que[window]] += self.base_vectors[
+                        que[0]]
+                except:
+                    pass
+                try:
+                    self.base_vectors[que[0]] += self.base_vectors[que[
+                        window]]
+                except:
+                    pass
+            que.clear()
+
+    def nn_context_context(self, target, n=5):
         """
         Find and return the n nearest neighbours to a target vector from
         the context matrix.
@@ -131,10 +154,30 @@ class RandomIndexing(object):
 
         return args, vals
 
-    def nearest_neighbours_base(self, target, n=5):
+    def nn_context_base(self, target, n=5):
         """
-        Find and return the n nearest neighbours to a target vector from
-        the base matrix.
+        Find and return the n nearest base neighbours to a target vector from
+        the context matrix.
+
+        :rtype : 2-tuple of ndarrays
+        :param target: int
+        :param n: int
+        """
+        d = np.zeros(self.size, dtype=np.float)
+
+        for i, vector in enumerate(self.base_vectors):
+            d[i] = VectorMath.cosine(self.context_vectors[target], vector)
+
+        args = np.argsort(d)[1:n + 1]
+
+        vals = d[args]
+
+        return args, vals
+
+    def nn_base_context(self, target, n=5):
+        """
+        Find and return the n nearest base neighbours to a target vector from
+        the context matrix.
 
         :rtype : 2-tuple of ndarrays
         :param target: int
@@ -151,6 +194,25 @@ class RandomIndexing(object):
 
         return args, vals
 
+    def nn_base_base(self, target, n=5):
+        """
+        Find and return the n nearest base neighbours to a target vector from
+        the base matrix.
+
+        :rtype : 2-tuple of ndarrays
+        :param target: int
+        :param n: int
+        """
+        d = np.zeros(self.size, dtype=np.float)
+
+        for i, vector in enumerate(self.base_vectors):
+            d[i] = VectorMath.cosine(self.base_vectors[target], vector)
+
+        args = np.argsort(d)[1:n + 1]
+
+        vals = d[args]
+
+        return args, vals
 
 def random_vector(random_seed, dimensionality, random_degree):
     """
