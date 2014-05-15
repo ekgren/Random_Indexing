@@ -92,6 +92,17 @@ class RandomIndexing(object):
                                                            self.dimensionality,
                                                            np.int32)
 
+    def create_special_word_space(self):
+        """
+        Creates base and context vectors for the Random Indexing object.
+        """
+        self.base_vectors = self.create_base_vectors(self.size,
+                                                     self.dimensionality,
+                                                     self.random_degree)
+        self.context_vectors = self.create_context_vectors(self.size,
+                                                           self.dimensionality,
+                                                           np.float)
+
     def update_context_vectors(self, sequence):
         """
         Incrementally update the context matrix.
@@ -117,17 +128,26 @@ class RandomIndexing(object):
 
     def experimental_update(self, sequence):
         """
-        Test.
+        Incrementally update the context matrix.
+
+        :param sequence: list, tuple or ndarray of integers
         """
-        for i, j in enumerate(sequence):
-            if j != -2147483648:
-                update = []
-                for m in (self.test_window + i):
-                    if (m > 0) and (m < sequence.size):
-                        n = sequence[m].copy()
-                        if n != -2147483648:
-                            update.append(n)
-                self.context_vectors[j] += self.base_vectors[update].sum(axis=0)
+        for i, window in enumerate(self.window):
+            # Create sequence queue.
+            que = self.sequence_queues[i]
+            for item in sequence:
+                que.append(item)
+                try:
+                    self.context_vectors[que[window]] += np.array(self.base_vectors[
+                        que[0]], dtype=np.float)/(1 + np.sum(np.abs(self.context_vectors[que[0]])))
+                except:
+                    pass
+                try:
+                    self.context_vectors[que[0]] += np.array(self.base_vectors[que[
+                        window]], dtype=np.float)/(1 + np.sum(np.abs(self.context_vectors[que[window]])))
+                except:
+                    pass
+            que.clear()
 
     def update_base_vectors(self, sequence):
         """

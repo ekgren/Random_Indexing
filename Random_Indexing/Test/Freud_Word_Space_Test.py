@@ -12,7 +12,7 @@ word_space = Random_Indexing.RandomIndexing()
 word_space.size = 4000
 word_space.dimensionality = 2000
 word_space.random_degree = 20
-word_space.create_regular_word_space()
+word_space.create_special_word_space()
 
 print "Word space created in " + str(time.time()-t) + " seconds."
 
