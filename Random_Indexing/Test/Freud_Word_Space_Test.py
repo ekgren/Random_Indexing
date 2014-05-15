@@ -49,11 +49,8 @@ print "Word space updated in " + str(time.time()-t) + " seconds."
 t = time.time()
 
 print
-print mapping.nn_context_context('genitals')
-print
-print mapping.nn_context_context('intelligence')
-print
-print mapping.nn_context_context('sexual')
-print
+for word in ['therapy', 'dreams', 'intelligence']:
+    print mapping.nn_context_context(word)
+    print
 
 print "Neighbours found in " + str(time.time()-t) + " seconds."
