@@ -5,8 +5,8 @@ __author__ = "Ariel Ekgren, https://github.com/ekgren/"
 
 class Mapping(object):
     """
-    Map object that maps arbitrary data to integer in the order provided
-    from 0 to length of input.
+    Map object that maps arbitrary data onto integers.
+    F: Object -> Integer
     """
 
     def __init__(self):
@@ -32,24 +32,22 @@ class Mapping(object):
 
     def map_sequence(self, sequence):
         """
-        Yeah.
+        Transform a sequence of objects into a sequence of integers.
         """
-        #print sequence
-        mapped_sequence = np.zeros(len(sequence))
+        mapped_sequence = np.zeros(len(sequence), dtype=np.int32)
 
         for i, item in enumerate(sequence):
-            #print item
-            #print self.map[item]
             if item in self.map:
-                #print "test"
                 mapped_sequence[i] = self.map[item]
             else:
-                mapped_sequence[i] = np.nan
+                mapped_sequence[i] = -2147483648
 
         return mapped_sequence
 
     def nn_context_context(self, target, n=5):
         """
+        Nearest neighbour search.
+        Distance from context vector to other context vectors.
         """
         if self.word_space != None:
             if target in self.map and self.map[target] < self.word_space\
@@ -62,6 +60,8 @@ class Mapping(object):
 
     def nn_context_base(self, target, n=5):
         """
+        Nearest neighbour search.
+        Distance from context vector to base vectors.
         """
         if self.word_space != None:
             if target in self.map and self.map[target] < self.word_space\
@@ -75,6 +75,8 @@ class Mapping(object):
 
     def nn_base_base(self, target, n=5):
         """
+        Nearest neighbour seach.
+        Distance from base vector to other base vectors.
         """
         if self.word_space != None:
             if target in self.map and self.map[target] < self.word_space\

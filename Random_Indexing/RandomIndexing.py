@@ -1,9 +1,9 @@
 import random
 from collections import deque
 
-import VectorMath
-
 import numpy as np
+
+import VectorMath
 
 __author__ = "Ariel Ekgren, https://github.com/ekgren/"
 
@@ -33,6 +33,10 @@ class RandomIndexing(object):
         self.window_size = window_size
         self.window = range(self.window_start_position,
                             self.window_start_position + self.window_size)
+
+        self.test_window = range(-self.window_size, self.window_size+1)
+        self.test_window.remove(0)
+        self.test_window = np.array(self.test_window)
 
         self.sequence_queues = [deque(maxlen=i + 1) for i in self.window]
 
@@ -110,6 +114,20 @@ class RandomIndexing(object):
                 except:
                     pass
             que.clear()
+
+    def experimental_update(self, sequence):
+        """
+        Test.
+        """
+        for i, j in enumerate(sequence):
+            if j != -2147483648:
+                update = []
+                for m in (self.test_window + i):
+                    if (m > 0) and (m < sequence.size):
+                        n = sequence[m].copy()
+                        if n != -2147483648:
+                            update.append(n)
+                self.context_vectors[j] += self.base_vectors[update].sum(axis=0)
 
     def update_base_vectors(self, sequence):
         """
