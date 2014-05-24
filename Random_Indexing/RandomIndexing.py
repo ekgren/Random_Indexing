@@ -92,17 +92,6 @@ class RandomIndexing(object):
                                                            self.dimensionality,
                                                            np.int32)
 
-    def create_special_word_space(self):
-        """
-        Creates base and context vectors for the Random Indexing object.
-        """
-        self.base_vectors = self.create_base_vectors(self.size,
-                                                     self.dimensionality,
-                                                     self.random_degree)
-        self.context_vectors = self.create_context_vectors(self.size,
-                                                           self.dimensionality,
-                                                           np.float)
-
     def update_context_vectors(self, sequence):
         """
         Incrementally update the context matrix.
@@ -126,27 +115,34 @@ class RandomIndexing(object):
                     pass
             que.clear()
 
-    def experimental_update(self, sequence):
+    def experimental_update(self, sequence, left=True):
         """
         Incrementally update the context matrix.
 
         :param sequence: list, tuple or ndarray of integers
         """
         for i, window in enumerate(self.window):
+            if i == 1:
+                modifier = 1
+            else:
+                modifier = -1
             # Create sequence queue.
             que = self.sequence_queues[i]
             for item in sequence:
                 que.append(item)
-                try:
-                    self.context_vectors[que[window]] += np.array(self.base_vectors[
-                        que[0]], dtype=np.float)/(1 + np.sum(np.abs(self.context_vectors[que[0]])))
-                except:
-                    pass
-                try:
-                    self.context_vectors[que[0]] += np.array(self.base_vectors[que[
-                        window]], dtype=np.float)/(1 + np.sum(np.abs(self.context_vectors[que[window]])))
-                except:
-                    pass
+                if left:
+                    try:
+                        self.context_vectors[que[window]] += modifier * self.base_vectors[
+                            que[0]]
+                    except:
+                        pass
+                else:
+                    try:
+                        self.context_vectors[que[0]] += modifier * self.base_vectors[que[
+                            window]]
+                    except:
+                        pass
+
             que.clear()
 
     def update_base_vectors(self, sequence):
@@ -212,6 +208,38 @@ class RandomIndexing(object):
 
         return args, vals
 
+    def nn_multi_context_base(self, targets, n=5):
+        """
+        Find and return the n nearest base neighbours to a set of target vectors
+        from the context matrix.
+
+        :rtype : 2-tuple of ndarrays
+        :param target: int
+        :param n: int
+        """
+        d = np.ones(self.size, dtype=np.float)
+
+        #new_target = self.context_vectors[targets].sum(axis=0)
+
+        new_target = self.context_vectors[targets[0]]
+        new_target += -self.context_vectors[targets[1]]
+
+        for i, vector in enumerate(self.base_vectors):
+            compare = True
+
+            for index in targets:
+                if i == index:
+                    compare = False
+
+            if compare:
+                d[i] = VectorMath.cosine(new_target, vector)
+
+        args = np.argsort(d)[1:n + 1]
+
+        vals = d[args]
+
+        return args, vals
+
     def nn_base_context(self, target, n=5):
         """
         Find and return the n nearest base neighbours to a target vector from
@@ -225,6 +253,35 @@ class RandomIndexing(object):
 
         for i, vector in enumerate(self.context_vectors):
             d[i] = VectorMath.cosine(self.base_vectors[target], vector)
+
+        args = np.argsort(d)[1:n + 1]
+
+        vals = d[args]
+
+        return args, vals
+
+    def nn_multi_base_context(self, targets, n=5):
+        """
+        Find and return the n nearest base neighbours to a set of target vectors
+        from the context matrix.
+
+        :rtype : 2-tuple of ndarrays
+        :param target: int
+        :param n: int
+        """
+        d = np.ones(self.size, dtype=np.float)
+
+        new_target = self.base_vectors[targets].sum(axis=0)
+
+        for i, vector in enumerate(self.context_vectors):
+            compare = True
+
+            for index in targets:
+                if i == index:
+                    compare = False
+
+            if compare:
+                d[i] = VectorMath.cosine(new_target, vector)
 
         args = np.argsort(d)[1:n + 1]
 

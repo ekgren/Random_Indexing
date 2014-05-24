@@ -73,9 +73,70 @@ class Mapping(object):
             else:
                 return "No target!"
 
+    def nn_multi_context_base(self, targets, n=5):
+        """
+        Nearest neighbour search.
+        Distance from base vector to context vectors.
+        """
+        if self.word_space != None:
+
+            mapped_targets = []
+
+            for target in targets:
+                if target in self.map and self.map[target] <\
+                        self.word_space.size:
+                    mapped_targets.append(self.map[target])
+
+            if len(mapped_targets) == len(targets):
+
+                neighb_args, neighb_vals = self.word_space\
+                    .nn_multi_context_base(mapped_targets, n)
+
+                return targets, self.inverse_map[neighb_args]
+            else:
+                return "No target!"
+
+    def nn_base_context(self, target, n=5):
+        """
+        Nearest neighbour search.
+        Distance from base vector to context vectors.
+        """
+        if self.word_space != None:
+            if target in self.map and self.map[target] < self.word_space\
+                    .size:
+                neighb_args, neighb_vals = self.word_space\
+                    .nn_base_context(
+                    self.map[target], n)
+                return target, self.inverse_map[neighb_args]
+            else:
+                return "No target!"
+
+    def nn_multi_base_context(self, targets, n=5):
+        """
+        Nearest neighbour search.
+        Distance from base vector to context vectors.
+        """
+        if self.word_space != None:
+
+            mapped_targets = []
+
+            for target in targets:
+                if target in self.map and self.map[target] <\
+                        self.word_space.size:
+                    mapped_targets.append(self.map[target])
+
+            if len(mapped_targets) == len(targets):
+
+                neighb_args, neighb_vals = self.word_space\
+                    .nn_multi_base_context(mapped_targets, n)
+
+                return targets, self.inverse_map[neighb_args]
+            else:
+                return "No target!"
+
     def nn_base_base(self, target, n=5):
         """
-        Nearest neighbour seach.
+        Nearest neighbour search.
         Distance from base vector to other base vectors.
         """
         if self.word_space != None:
